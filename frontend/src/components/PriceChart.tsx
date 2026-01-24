@@ -1,4 +1,5 @@
 import ReactECharts from 'echarts-for-react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import type { HistoryRecord } from '../types/api';
 import type { ChartMode, BaseCurrency } from '../App';
 
@@ -28,6 +29,62 @@ const AREA_COLORS = {
 };
 
 export function PriceChart({ countryName, countryCode, records, mode, baseCurrency }: PriceChartProps) {
+    const chartRef = useRef<ReactECharts>(null);
+    const [cursorIndex, setCursorIndex] = useState<number | null>(null);
+
+    // Keyboard navigation for chart cursor
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        // Only handle if not in an input and no modifiers (except maybe shift)
+        if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+
+            setCursorIndex(current => {
+                const maxIndex = records.length - 1;
+                let next = current === null ? maxIndex : current;
+
+                if (e.key === 'ArrowLeft') {
+                    // Loop to end if at start
+                    next = current === null || current === 0 ? maxIndex : current - 1;
+                } else {
+                    // Loop to start if at end
+                    next = current === null || current === maxIndex ? 0 : current + 1;
+                }
+                return next;
+            });
+        }
+    }, [records.length]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    // Sync cursor index with ECharts tooltip
+    useEffect(() => {
+        if (cursorIndex === null || !chartRef.current) return;
+
+        const chart = chartRef.current.getEchartsInstance();
+        chart.dispatchAction({
+            type: 'showTip',
+            seriesIndex: 0,
+            dataIndex: cursorIndex,
+        });
+        // Also show axis pointer
+        chart.dispatchAction({
+            type: 'updateAxisPointer',
+            seriesIndex: 0,
+            dataIndex: cursorIndex,
+        });
+    }, [cursorIndex]);
+
+    // Reset cursor when data changes
+    useEffect(() => {
+        setCursorIndex(null);
+    }, [countryCode, baseCurrency]);
+
     // Build chart config based on mode
     const getConfig = () => {
         switch (mode) {
@@ -179,6 +236,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
     return (
         <div className="h-full p-4">
             <ReactECharts
+                ref={chartRef}
                 key={mode}
                 option={option}
                 style={{ height: '100%' }}
