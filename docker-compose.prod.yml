@@ -1,7 +1,7 @@
 services:
   # Backend Service (Go + DuckDB)
   backend:
-    image: ghcr.io/xtang/the_mac_index/backend:latest
+    image: ghcr.io/xtang/the-mac-index/backend:latest
     container_name: power-index-backend
     restart: unless-stopped
     volumes:
@@ -13,7 +13,7 @@ services:
 
   # Frontend Service (React + Nginx)
   frontend:
-    image: ghcr.io/xtang/the_mac_index/frontend:latest
+    image: ghcr.io/xtang/the-mac-index/frontend:latest
     container_name: power-index-frontend
     restart: unless-stopped
     expose:
