@@ -9,7 +9,9 @@
 ================================================================
 PURCHASING POWER TERMINAL v1.0.0
 ================================================================
-
+```
+![Demo](demo.png)
+```text
 [INTRODUCTION]
 A terminal-based interface for visualizing global purchasing power
 disparities using the Big Mac Index. 
