@@ -87,7 +87,7 @@ COMPARE >> VALUATION >> BUYING POWER
 
     console.log('%c' + asciiArt, 'color: #ffb700; font-weight: bold;');
     console.log('%c' + readmeContent, 'color: #00ff00; font-family: monospace;');
-    console.log('%chttps://github.com/xtang/the_mac_index', 'color: #00aaff; text-decoration: underline;');
+    console.log('%chttps://github.com/xtang/the-mac-index', 'color: #00aaff; text-decoration: underline;');
     console.log('%cHave fun!', 'color: #ff00ff; font-weight: bold; font-size: 14px;');
   }, []);
 
