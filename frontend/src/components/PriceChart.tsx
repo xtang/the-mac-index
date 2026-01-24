@@ -33,9 +33,9 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
         switch (mode) {
             case 'price':
                 return {
-                    series1: { name: 'USD Price', data: records.map(r => r.dollar_price), color: COLORS.usd, areaColor: AREA_COLORS.usd },
+                    series1: { name: `${baseCurrency} Price`, data: records.map(r => r.base_price), color: COLORS.usd, areaColor: AREA_COLORS.usd },
                     series2: { name: 'Local Price', data: records.map(r => r.local_price), color: COLORS.local },
-                    yAxis1: { name: 'USD', color: COLORS.usd, formatter: null },
+                    yAxis1: { name: baseCurrency, color: COLORS.usd, formatter: null },
                     yAxis2: { name: 'LOCAL', color: COLORS.local, formatter: null },
                 };
             case 'buying-power':
@@ -48,9 +48,9 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
             case 'index':
             default:
                 return {
-                    series1: { name: 'USD Price', data: records.map(r => r.dollar_price), color: COLORS.usd, areaColor: AREA_COLORS.usd },
+                    series1: { name: `${baseCurrency} Price`, data: records.map(r => r.base_price), color: COLORS.usd, areaColor: AREA_COLORS.usd },
                     series2: { name: 'Index', data: records.map(r => r.raw_index), color: COLORS.index },
-                    yAxis1: { name: 'USD', color: COLORS.usd, formatter: null },
+                    yAxis1: { name: baseCurrency, color: COLORS.usd, formatter: null },
                     yAxis2: { name: 'INDEX %', color: COLORS.index, formatter: (v: number) => `${(v * 100).toFixed(0)}%` },
                 };
         }
@@ -90,7 +90,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
                 return `
           <div style="padding: 8px;">
             <div style="color: #FFB000; margin-bottom: 4px;">${record.date}</div>
-            <div style="color: ${COLORS.usd};">USD: $${record.dollar_price.toFixed(2)}</div>
+            <div style="color: ${COLORS.usd};">${baseCurrency}: ${record.base_price.toFixed(2)}</div>
             <div style="color: ${COLORS.local};">Local: ${record.local_price.toFixed(2)}</div>
             <div style="color: ${COLORS.index};">Index: ${(record.raw_index * 100).toFixed(1)}%</div>
           </div>

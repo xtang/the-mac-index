@@ -8,6 +8,7 @@ export interface HistoryRecord {
     date: string;
     local_price: number;
     dollar_price: number;
+    base_price: number;
     exchange_rate: number;
     raw_index: number;
 }
