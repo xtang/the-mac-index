@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Layout } from './components/Layout';
 import { CountryList } from './components/CountryList';
 import { PriceChart } from './components/PriceChart';
@@ -37,6 +37,58 @@ function App() {
     const handleResize = () => setWindowDims({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Console Easter Egg
+  const easterEggPrinted = useRef(false);
+  useEffect(() => {
+    if (easterEggPrinted.current) return;
+    easterEggPrinted.current = true;
+
+    const asciiArt = `
+          _..-""""""-.._
+        .'              '.
+       /   .      .       \\
+      ;   .      .      .  ;
+      |                    |
+      | ...................|
+      |____________________|
+       _/_/_/_/_/_/_/_/_/_/
+      |____________________|
+       _/_/_/_/_/_/_/_/_/_/
+      |____________________|
+      |                    |
+      |____________________|
+`;
+
+    const readmeContent = `
+PURCHASING POWER TERMINAL v1.0.0
+
+[INTRODUCTION]
+A terminal-based interface for visualizing global purchasing power
+disparities using the Big Mac Index. 
+
+COMPARE >> VALUATION >> BUYING POWER
+
+[STACK]
+> Frontend: React (Vite) + Tailwind + ECharts
+> Backend:  Go (Fiber) + DuckDB
+> Deploy:   Docker + Caddy + GitHub Actions
+
+[USAGE]
+1. Select Country (Desktop: Click / Mobile: Tap)
+2. View Local Price vs Base Currency
+3. Analyze Purchasing Power Parity
+
+[CREDITS]
+> Design:   Classic Terminal Aesthetics
+> Data:     The Economist Big Mac Index
+> Code:     TOTALLY DONE BY ANTIGRAVITY`;
+
+    console.log('%c' + asciiArt, 'color: #ffb700; font-weight: bold;');
+    console.log('%c' + readmeContent, 'color: #00ff00; font-family: monospace;');
+    console.log('%chttps://github.com/xtang/the_mac_index', 'color: #00aaff; text-decoration: underline;');
+    console.log('%cHave fun!', 'color: #ff00ff; font-weight: bold; font-size: 14px;');
   }, []);
 
   // Cycle chart mode with 'v' key, base currency with 'b' key (Desktop only)
