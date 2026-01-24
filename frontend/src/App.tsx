@@ -61,7 +61,7 @@ function App() {
         </div>
 
         {/* Main Panel: Chart */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col border-x-2 border-[--color-terminal-grid]">
           {historyLoading ? (
             <div className="flex-1 flex items-center justify-center">
               <span className="text-2xl text-glow">

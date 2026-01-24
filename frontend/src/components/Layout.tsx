@@ -58,10 +58,15 @@ export function Layout({ children }: LayoutProps) {
             </main>
 
             {/* Bottom Status Bar */}
-            <footer className="px-4 py-1 border-t border-[--color-terminal-grid] bg-[--color-terminal-bg-alt] text-sm text-[--color-terminal-dim]">
+            <footer className="px-4 py-1 border-t border-[--color-terminal-grid] bg-[--color-terminal-bg-alt] text-sm">
                 <div className="flex justify-between">
-                    <span>SOURCE: THE ECONOMIST</span>
-                    <span>↑↓ NAVIGATE | ENTER SELECT | ESC BACK</span>
+                    <span className="text-[--color-terminal-dim]">SOURCE: THE ECONOMIST</span>
+                    <div className="flex items-center gap-3 text-[--color-terminal-dim]">
+                        <span><span className="text-[--color-terminal-amber]">[↑↓]</span> NAV</span>
+                        <span><span className="text-[--color-terminal-amber]">[f]</span> FILTER</span>
+                        <span><span className="text-[--color-terminal-amber]">[ENTER]</span> SELECT</span>
+                        <span><span className="text-[--color-terminal-amber]">[ESC]</span> CLEAR</span>
+                    </div>
                 </div>
             </footer>
         </div>

@@ -31,11 +31,12 @@ type Country struct {
 // GetCountries returns all unique countries from the dataset
 func GetCountries(db *sql.DB) ([]Country, error) {
 	query := `
-		SELECT DISTINCT 
+		SELECT 
 			iso_a3 AS code,
-			name,
-			currency_code AS currency
+			FIRST(name) AS name,
+			FIRST(currency_code) AS currency
 		FROM big_mac_raw
+		GROUP BY iso_a3
 		ORDER BY name;
 	`
 
