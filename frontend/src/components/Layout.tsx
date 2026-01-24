@@ -2,9 +2,11 @@ import { ReactNode, useState, useEffect } from 'react';
 
 interface LayoutProps {
     children: ReactNode;
+    chartMode?: string;
+    modeLabel?: string;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children, modeLabel }: LayoutProps) {
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
@@ -41,6 +43,14 @@ export function Layout({ children }: LayoutProps) {
                         DATA: BIG MAC INDEX
                     </span>
                     <span className="text-[--color-terminal-dim]">|</span>
+                    {modeLabel && (
+                        <>
+                            <span className="text-[--color-terminal-green] text-sm">
+                                VIEW: {modeLabel}
+                            </span>
+                            <span className="text-[--color-terminal-dim]">|</span>
+                        </>
+                    )}
                     <span className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-[--color-terminal-green] animate-pulse" />
                         <span className="text-sm">CONNECTED</span>
@@ -64,6 +74,7 @@ export function Layout({ children }: LayoutProps) {
                     <div className="flex items-center gap-3 text-[--color-terminal-dim]">
                         <span><span className="text-[--color-terminal-amber]">[↑↓]</span> NAV</span>
                         <span><span className="text-[--color-terminal-amber]">[f]</span> FILTER</span>
+                        <span><span className="text-[--color-terminal-amber]">[v]</span> VIEW</span>
                         <span><span className="text-[--color-terminal-amber]">[ENTER]</span> SELECT</span>
                         <span><span className="text-[--color-terminal-amber]">[ESC]</span> CLEAR</span>
                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Layout } from './components/Layout';
 import { CountryList } from './components/CountryList';
 import { PriceChart } from './components/PriceChart';
@@ -7,11 +7,39 @@ import type { Country, HistoryResponse } from './types/api';
 
 const API_BASE = 'http://localhost:3000/api/v1';
 
+export type ChartMode = 'price' | 'buying-power' | 'index';
+
+const CHART_MODES: ChartMode[] = ['price', 'buying-power', 'index'];
+const MODE_LABELS: Record<ChartMode, string> = {
+  'price': 'PRICE (USD + LOCAL)',
+  'buying-power': 'BUYING POWER (LOCAL + INDEX)',
+  'index': 'INDEX (USD + INDEX)',
+};
+
 function App() {
   const { data: countries, loading: countriesLoading } = useApi<Country[]>('/countries');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [chartMode, setChartMode] = useState<ChartMode>('index');
+
+  // Cycle chart mode with 'v' key
+  const handleChartModeKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'v' && !e.ctrlKey && !e.metaKey) {
+      // Don't trigger if in filter input
+      if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+      e.preventDefault();
+      setChartMode(current => {
+        const currentIndex = CHART_MODES.indexOf(current);
+        return CHART_MODES[(currentIndex + 1) % CHART_MODES.length];
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleChartModeKey);
+    return () => window.removeEventListener('keydown', handleChartModeKey);
+  }, [handleChartModeKey]);
 
   // Select first country by default
   useEffect(() => {
@@ -43,7 +71,7 @@ function App() {
   const selectedCountryName = countries?.find(c => c.code === selectedCountry)?.name || '';
 
   return (
-    <Layout>
+    <Layout chartMode={chartMode} modeLabel={MODE_LABELS[chartMode]}>
       <div className="h-full flex">
         {/* Left Panel: Country List */}
         <div className="w-64 flex-shrink-0">
@@ -73,6 +101,7 @@ function App() {
               countryName={selectedCountryName}
               countryCode={historyData.country}
               records={historyData.records}
+              mode={chartMode}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">
