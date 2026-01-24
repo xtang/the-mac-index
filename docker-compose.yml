@@ -27,11 +27,11 @@ services:
     container_name: power-index-gateway
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      # Expose on port 8080 to avoid conflict with host Nginx
+      - "8080:80"
     environment:
-      # Pass the domain from environment variable, default to localhost for local testing
-      - SITE_ADDRESS=${DOMAIN:-localhost}
+      # Caddy inside will listen on port 80
+      - SITE_ADDRESS=:80
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
