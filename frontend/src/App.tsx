@@ -6,7 +6,7 @@ import { MobileCountrySelector } from './components/MobileCountrySelector';
 import { useApi } from './hooks/useApi';
 import type { Country, HistoryResponse } from './types/api';
 
-const API_BASE = `http://${window.location.hostname}:3000/api/v1`;
+const API_BASE = '/api/v1';
 
 export type ChartMode = 'price' | 'buying-power' | 'index';
 export type BaseCurrency = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY';

@@ -1,0 +1,45 @@
+services:
+  # Backend Service (Go + DuckDB)
+  backend:
+    build:
+      context: ./backend
+    container_name: power-index-backend
+    restart: unless-stopped
+    volumes:
+      # Mount the data directory to /data inside the container
+      # The app running in /app looks for ../data/ppt.db -> /data/ppt.db
+      - ./data:/data
+    expose:
+      - "3000"
+
+  # Frontend Service (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: power-index-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  # Gateway Service (Caddy)
+  gateway:
+    image: caddy:alpine
+    container_name: power-index-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Pass the domain from environment variable, default to localhost for local testing
+      - SITE_ADDRESS=${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  caddy_data:
+  caddy_config:

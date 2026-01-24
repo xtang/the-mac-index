@@ -1,0 +1,14 @@
+{$SITE_ADDRESS} {
+	# Backend API
+	handle /api/* {
+		reverse_proxy backend:3000
+	}
+
+	# Frontend
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	# Compress responses
+	encode zstd gzip
+}

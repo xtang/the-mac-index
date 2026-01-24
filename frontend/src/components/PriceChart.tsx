@@ -177,7 +177,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
                 axisLabel: {
                     color: config.yAxis1.color,
                     fontFamily: 'VT323, monospace',
-                    ...(config.yAxis1.formatter && { formatter: config.yAxis1.formatter })
+                    ...(config.yAxis1.formatter ? { formatter: config.yAxis1.formatter } : {})
                 },
                 splitLine: { lineStyle: { color: COLORS.grid, type: 'dashed' } },
             },
@@ -190,7 +190,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
                 axisLabel: {
                     color: config.yAxis2.color,
                     fontFamily: 'VT323, monospace',
-                    ...(config.yAxis2.formatter && { formatter: config.yAxis2.formatter })
+                    ...(config.yAxis2.formatter ? { formatter: config.yAxis2.formatter } : {})
                 },
                 splitLine: { show: false },
             },
