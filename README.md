@@ -33,6 +33,9 @@ COMPARE >> VALUATION >> BUYING POWER
 > Data:     The Economist Big Mac Index
 > Code:     TOTALLY DONE BY ANTIGRAVITY
 
+[LICENSE]
+> MIT License
+
 ================================================================
 EOF
 ```
