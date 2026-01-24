@@ -114,23 +114,25 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
     };
 
     const config = getConfig();
+    const isSmallScreen = window.innerWidth < 768;
 
     const option = {
         backgroundColor: 'transparent',
         grid: {
-            top: 60,
-            right: 80,
+            top: 75,
+            right: isSmallScreen ? 45 : 80,
             bottom: 130,
-            left: 80,
+            left: isSmallScreen ? 45 : 80,
         },
         title: {
             text: `BIG MAC: ${countryName.toUpperCase()} (${countryCode}) vs ${baseCurrency}`,
             textStyle: {
                 color: '#FFB000',
                 fontFamily: 'VT323, monospace',
-                fontSize: 18,
+                fontSize: isSmallScreen ? 14 : 18,
             },
             left: 'center',
+            top: 5,
         },
         tooltip: {
             trigger: 'axis',
@@ -234,7 +236,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
     };
 
     return (
-        <div className="h-full p-4">
+        <div className="h-full p-2 md:p-4">
             <ReactECharts
                 ref={chartRef}
                 key={mode}

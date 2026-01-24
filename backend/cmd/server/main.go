@@ -48,6 +48,6 @@ func main() {
 	v1.Post("/calculator/ppp", handlers.CalculatorHandler(database))
 
 	// Start server
-	log.Printf("🚀 Purchasing Power Terminal starting on http://localhost%s", port)
+	log.Printf("🚀 Purchasing Power Terminal starting on 0.0.0.0%s (Accessible on Network)", port)
 	log.Fatal(app.Listen(port))
 }
