@@ -68,7 +68,8 @@ function App() {
   // Select first country by default
   useEffect(() => {
     if (countries && countries.length > 0 && !selectedCountry) {
-      setSelectedCountry(countries[0].code);
+      const defaultCountry = countries.find(c => c.code === 'CHN') || countries[0];
+      setSelectedCountry(defaultCountry.code);
     }
   }, [countries, selectedCountry]);
 
