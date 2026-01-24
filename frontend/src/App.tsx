@@ -13,11 +13,11 @@ export type BaseCurrency = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY';
 const CHART_MODES: ChartMode[] = ['price', 'buying-power', 'index'];
 const BASE_CURRENCIES: BaseCurrency[] = ['USD', 'CNY', 'EUR', 'GBP', 'JPY'];
 
-const MODE_LABELS: Record<ChartMode, string> = {
-  'price': 'PRICE (USD + LOCAL)',
+const getModeLabels = (base: BaseCurrency): Record<ChartMode, string> => ({
+  'price': `PRICE (${base} + LOCAL)`,
   'buying-power': 'BUYING POWER (LOCAL + INDEX)',
-  'index': 'INDEX (USD + INDEX)',
-};
+  'index': `INDEX (${base} + INDEX)`,
+});
 
 function App() {
   const { data: countries, loading: countriesLoading } = useApi<Country[]>('/countries');
@@ -83,7 +83,7 @@ function App() {
   const selectedCountryName = countries?.find(c => c.code === selectedCountry)?.name || '';
 
   return (
-    <Layout chartMode={chartMode} modeLabel={MODE_LABELS[chartMode]}>
+    <Layout chartMode={chartMode} modeLabel={getModeLabels(baseCurrency)[chartMode]}>
       <div className="h-full flex">
         {/* Left Panel: Country List */}
         <div className="w-64 flex-shrink-0">
@@ -129,11 +129,9 @@ function App() {
         <div className="w-72 flex-shrink-0 border-l-2 border-[--color-terminal-grid] p-4 flex flex-col">
           {/* Settings Section */}
           <div className="border border-[--color-terminal-amber] p-3 mb-4">
-            <div className="text-[--color-terminal-amber] text-sm mb-2">► SETTINGS</div>
-
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[--color-terminal-dim] text-xs">BASE CURRENCY [b]</span>
-              <span className="text-[--color-terminal-green] font-bold">{baseCurrency}</span>
+            <div className="text-[--color-terminal-amber] text-sm mb-2">► BASE CURRENCY [b]</div>
+            <div className="text-2xl text-glow mb-2">
+              {baseCurrency}
             </div>
 
             <div className="flex gap-1">
@@ -142,8 +140,8 @@ function App() {
                   key={currency}
                   onClick={() => setBaseCurrency(currency)}
                   className={`px-2 py-1 text-xs border ${baseCurrency === currency
-                      ? 'border-[--color-terminal-green] text-[--color-terminal-green] bg-[--color-terminal-green]/20'
-                      : 'border-[--color-terminal-grid] text-[--color-terminal-dim] hover:border-[--color-terminal-green]/50'
+                    ? 'border-[--color-terminal-green] text-[--color-terminal-green] bg-[--color-terminal-green]/20'
+                    : 'border-[--color-terminal-grid] text-[--color-terminal-dim] hover:border-[--color-terminal-green]/50'
                     }`}
                 >
                   {currency}
@@ -166,9 +164,9 @@ function App() {
           {historyData && historyData.records && historyData.records.length > 0 && (
             <>
               <div className="border border-[--color-terminal-grid] p-3 mb-4">
-                <div className="text-[--color-terminal-dim] text-xs mb-1">LATEST PRICE (USD)</div>
+                <div className="text-[--color-terminal-dim] text-xs mb-1">LATEST PRICE (LOCAL)</div>
                 <div className="text-xl text-[--color-terminal-green]">
-                  ${historyData.records[historyData.records.length - 1].dollar_price.toFixed(2)}
+                  {historyData.records[historyData.records.length - 1].local_price.toFixed(2)}
                 </div>
               </div>
 
