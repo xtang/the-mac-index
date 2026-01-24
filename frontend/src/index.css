@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+/* Terminal Theme */
+@theme {
+  --color-terminal-bg: #050505;
+  --color-terminal-bg-alt: #0D1117;
+  --color-terminal-green: #00FF41;
+  --color-terminal-amber: #FFB000;
+  --color-terminal-red: #FF0055;
+  --color-terminal-grid: #003B00;
+  --color-terminal-dim: #00AA2A;
+  
+  --font-mono: 'VT323', 'Fira Code', 'IBM Plex Mono', monospace;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-terminal-bg);
+  color: var(--color-terminal-green);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* CRT Scanline Effect */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  z-index: 9999;
+}
+
+/* Blinking Cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Terminal Green Glow */
+.text-glow {
+  text-shadow: 0 0 5px var(--color-terminal-green),
+               0 0 10px var(--color-terminal-green);
+}
+
+/* No rounded corners - Terminal aesthetic */
+* {
+  border-radius: 0 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-terminal-bg-alt);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-terminal-grid);
+  border: 1px solid var(--color-terminal-green);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-terminal-green);
+  color: var(--color-terminal-bg);
+}
