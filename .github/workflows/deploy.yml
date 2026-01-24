@@ -47,6 +47,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,8 +72,8 @@ jobs:
           script: |
             cd ~/power-index
             
-            # Login to GHCR on the server (using the PAT secret)
-            echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Login to GHCR (using ephemeral GITHUB_TOKEN)
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Export DOMAIN for Caddy (set this in GitHub Secrets or Variables)
             export DOMAIN=${{ vars.DOMAIN }}
