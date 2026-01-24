@@ -60,7 +60,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          source: "docker-compose.yml,Caddyfile"
+          source: "docker-compose.yml,Caddyfile,data/ppt.db"
           target: "~/power-index"
 
       - name: Deploy via SSH

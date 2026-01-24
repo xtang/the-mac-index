@@ -3,7 +3,7 @@ node_modules/
 .vite/
 
 # Database
-data/*.db
+# data/*.db
 
 # Build outputs
 dist/
