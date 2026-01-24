@@ -1,12 +1,13 @@
 import ReactECharts from 'echarts-for-react';
 import type { HistoryRecord } from '../types/api';
-import type { ChartMode } from '../App';
+import type { ChartMode, BaseCurrency } from '../App';
 
 interface PriceChartProps {
     countryName: string;
     countryCode: string;
     records: HistoryRecord[];
     mode: ChartMode;
+    baseCurrency: BaseCurrency;
 }
 
 // Color scheme
@@ -26,7 +27,7 @@ const AREA_COLORS = {
     index: 'rgba(0, 191, 255, 0.3)',
 };
 
-export function PriceChart({ countryName, countryCode, records, mode }: PriceChartProps) {
+export function PriceChart({ countryName, countryCode, records, mode, baseCurrency }: PriceChartProps) {
     // Build chart config based on mode
     const getConfig = () => {
         switch (mode) {
@@ -66,7 +67,7 @@ export function PriceChart({ countryName, countryCode, records, mode }: PriceCha
             left: 80,
         },
         title: {
-            text: `BIG MAC: ${countryName.toUpperCase()} (${countryCode})`,
+            text: `BIG MAC: ${countryName.toUpperCase()} (${countryCode}) vs ${baseCurrency}`,
             textStyle: {
                 color: '#FFB000',
                 fontFamily: 'VT323, monospace',

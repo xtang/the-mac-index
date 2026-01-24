@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 
 interface LayoutProps {
     children: ReactNode;
@@ -75,7 +75,7 @@ export function Layout({ children, modeLabel }: LayoutProps) {
                         <span><span className="text-[--color-terminal-amber]">[↑↓]</span> NAV</span>
                         <span><span className="text-[--color-terminal-amber]">[f]</span> FILTER</span>
                         <span><span className="text-[--color-terminal-amber]">[v]</span> VIEW</span>
-                        <span><span className="text-[--color-terminal-amber]">[ENTER]</span> SELECT</span>
+                        <span><span className="text-[--color-terminal-amber]">[b]</span> BASE</span>
                         <span><span className="text-[--color-terminal-amber]">[ESC]</span> CLEAR</span>
                     </div>
                 </div>

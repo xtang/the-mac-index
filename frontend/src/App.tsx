@@ -8,8 +8,11 @@ import type { Country, HistoryResponse } from './types/api';
 const API_BASE = 'http://localhost:3000/api/v1';
 
 export type ChartMode = 'price' | 'buying-power' | 'index';
+export type BaseCurrency = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY';
 
 const CHART_MODES: ChartMode[] = ['price', 'buying-power', 'index'];
+const BASE_CURRENCIES: BaseCurrency[] = ['USD', 'CNY', 'EUR', 'GBP', 'JPY'];
+
 const MODE_LABELS: Record<ChartMode, string> = {
   'price': 'PRICE (USD + LOCAL)',
   'buying-power': 'BUYING POWER (LOCAL + INDEX)',
@@ -22,24 +25,33 @@ function App() {
   const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [chartMode, setChartMode] = useState<ChartMode>('index');
+  const [baseCurrency, setBaseCurrency] = useState<BaseCurrency>('USD');
 
-  // Cycle chart mode with 'v' key
-  const handleChartModeKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'v' && !e.ctrlKey && !e.metaKey) {
-      // Don't trigger if in filter input
-      if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+  // Cycle chart mode with 'v' key, base currency with 'b' key
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Don't trigger if in filter input
+    if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+    if (e.ctrlKey || e.metaKey) return;
+
+    if (e.key === 'v') {
       e.preventDefault();
       setChartMode(current => {
         const currentIndex = CHART_MODES.indexOf(current);
         return CHART_MODES[(currentIndex + 1) % CHART_MODES.length];
       });
+    } else if (e.key === 'b') {
+      e.preventDefault();
+      setBaseCurrency(current => {
+        const currentIndex = BASE_CURRENCIES.indexOf(current);
+        return BASE_CURRENCIES[(currentIndex + 1) % BASE_CURRENCIES.length];
+      });
     }
   }, []);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleChartModeKey);
-    return () => window.removeEventListener('keydown', handleChartModeKey);
-  }, [handleChartModeKey]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   // Select first country by default
   useEffect(() => {
@@ -48,14 +60,14 @@ function App() {
     }
   }, [countries, selectedCountry]);
 
-  // Fetch history when country changes
+  // Fetch history when country or base currency changes
   useEffect(() => {
     if (!selectedCountry) return;
 
     const fetchHistory = async () => {
       setHistoryLoading(true);
       try {
-        const response = await fetch(`${API_BASE}/index/history?country=${selectedCountry}`);
+        const response = await fetch(`${API_BASE}/index/history?country=${selectedCountry}&base=${baseCurrency}`);
         const data = await response.json();
         setHistoryData(data);
       } catch (err) {
@@ -66,7 +78,7 @@ function App() {
     };
 
     fetchHistory();
-  }, [selectedCountry]);
+  }, [selectedCountry, baseCurrency]);
 
   const selectedCountryName = countries?.find(c => c.code === selectedCountry)?.name || '';
 
@@ -102,6 +114,7 @@ function App() {
               countryCode={historyData.country}
               records={historyData.records}
               mode={chartMode}
+              baseCurrency={baseCurrency}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -112,8 +125,34 @@ function App() {
           )}
         </div>
 
-        {/* Right Panel: Stats */}
-        <div className="w-72 flex-shrink-0 border-l-2 border-[--color-terminal-grid] p-4">
+        {/* Right Panel: Stats & Settings */}
+        <div className="w-72 flex-shrink-0 border-l-2 border-[--color-terminal-grid] p-4 flex flex-col">
+          {/* Settings Section */}
+          <div className="border border-[--color-terminal-amber] p-3 mb-4">
+            <div className="text-[--color-terminal-amber] text-sm mb-2">► SETTINGS</div>
+
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[--color-terminal-dim] text-xs">BASE CURRENCY [b]</span>
+              <span className="text-[--color-terminal-green] font-bold">{baseCurrency}</span>
+            </div>
+
+            <div className="flex gap-1">
+              {BASE_CURRENCIES.map(currency => (
+                <button
+                  key={currency}
+                  onClick={() => setBaseCurrency(currency)}
+                  className={`px-2 py-1 text-xs border ${baseCurrency === currency
+                      ? 'border-[--color-terminal-green] text-[--color-terminal-green] bg-[--color-terminal-green]/20'
+                      : 'border-[--color-terminal-grid] text-[--color-terminal-dim] hover:border-[--color-terminal-green]/50'
+                    }`}
+                >
+                  {currency}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Current Selection */}
           <div className="border border-[--color-terminal-green] p-3 mb-4">
             <div className="text-[--color-terminal-amber] text-sm mb-2">► CURRENT SELECTION</div>
             <div className="text-2xl text-glow">
@@ -134,7 +173,7 @@ function App() {
               </div>
 
               <div className="border border-[--color-terminal-grid] p-3 mb-4">
-                <div className="text-[--color-terminal-dim] text-xs mb-1">VALUATION INDEX</div>
+                <div className="text-[--color-terminal-dim] text-xs mb-1">VALUATION vs {baseCurrency}</div>
                 <div className={`text-xl ${historyData.records[historyData.records.length - 1].raw_index > 0
                   ? 'text-[--color-terminal-red]'
                   : 'text-[--color-terminal-green]'
@@ -143,8 +182,8 @@ function App() {
                 </div>
                 <div className="text-[--color-terminal-dim] text-xs mt-1">
                   {historyData.records[historyData.records.length - 1].raw_index > 0
-                    ? 'OVERVALUED vs USD'
-                    : 'UNDERVALUED vs USD'}
+                    ? `OVERVALUED vs ${baseCurrency}`
+                    : `UNDERVALUED vs ${baseCurrency}`}
                 </div>
               </div>
 
