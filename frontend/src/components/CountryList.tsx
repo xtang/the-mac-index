@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Country } from '../types/api';
 
 interface CountryListProps {
@@ -24,10 +24,20 @@ export function CountryList({ countries, selectedCountry, onSelect }: CountryLis
         }
     }, [countries, focusIndex, onSelect]);
 
+    const listRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyDown]);
+
+    // Scroll focused item into view
+    useEffect(() => {
+        if (listRef.current) {
+            const focusedEl = listRef.current.children[focusIndex] as HTMLElement;
+            focusedEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }, [focusIndex]);
 
     return (
         <div className="h-full flex flex-col border-r-2 border-[--color-terminal-grid]">
@@ -37,7 +47,7 @@ export function CountryList({ countries, selectedCountry, onSelect }: CountryLis
                 </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto" ref={listRef}>
                 {countries.map((country, index) => (
                     <div
                         key={country.code}
@@ -51,9 +61,9 @@ export function CountryList({ countries, selectedCountry, onSelect }: CountryLis
                         onClick={() => onSelect(country.code)}
                     >
                         <span className="flex items-center gap-2">
-                            {selectedCountry === country.code && (
-                                <span className="text-[--color-terminal-amber]">▶</span>
-                            )}
+                            <span className={`w-3 ${index === focusIndex ? 'text-[--color-terminal-green]' : selectedCountry === country.code ? 'text-[--color-terminal-amber]' : 'opacity-0'}`}>
+                                {index === focusIndex ? '›' : '▶'}
+                            </span>
                             {country.name}
                         </span>
                         <span className="text-[--color-terminal-dim] text-xs">

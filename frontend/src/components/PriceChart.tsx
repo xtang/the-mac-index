@@ -13,7 +13,7 @@ export function PriceChart({ countryName, countryCode, records }: PriceChartProp
         grid: {
             top: 60,
             right: 40,
-            bottom: 60,
+            bottom: 130,
             left: 80,
         },
         title: {
@@ -115,6 +115,8 @@ export function PriceChart({ countryName, countryCode, records }: PriceChartProp
             data: ['USD Price', 'Raw Index'],
             textStyle: { color: '#00AA2A', fontFamily: 'VT323, monospace' },
             bottom: 10,
+            left: 'center',
+            orient: 'horizontal',
         },
     };
 
