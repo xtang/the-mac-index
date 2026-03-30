@@ -300,3 +300,105 @@ After hotfix deployment, monitor:
 
 **Prepared by**: Shelley (Workflow Agent)  
 **Contact**: For questions about this hotfix, see PR #3
+
+
+---
+
+## HOTFIX #2: Frontend Type Mismatch (2026-03-30 15:50 UTC)
+
+### Problem
+**Status**: CRITICAL - Site completely down (blank page)
+**Duration**: ~20 minutes (from deployment to fix)
+**Root Cause**: Type mismatch between API response and frontend expectations
+
+### Investigation
+1. **Symptoms**:
+   - Production shows blank page (black screen)
+   - React loads successfully (console logs visible)
+   - API calls succeed (200 status)
+   - DOM element `#root` empty (innerHTML.length = 0)
+   - No JavaScript errors in console
+
+2. **Analysis**:
+   - Network monitoring showed successful API calls to:
+     - `/api/v1/indices` → 200 OK
+     - `/api/v1/countries?type=bigmac` → 200 OK
+   - Browser console showed React initialization logs
+   - Silent failure indicated type/data mismatch issue
+
+3. **Root Cause Found**:
+   ```typescript
+   // App.tsx line 23 - WRONG:
+   const { data: countries } = useApi<Country[]>(`/countries?type=${selectedIndex}`);
+   
+   // API actually returns:
+   { index_type: string, countries: Country[], count: number }
+   ```
+   
+   The issue: When PR #3 (backward compatibility) was merged, it changed the API to return `CountriesResponse` format when `?type=` parameter is present. However, the App.tsx code still expected a flat `Country[]` array.
+
+### Solution
+**PR #4**: [HOTFIX: Fix frontend type mismatch causing blank page](https://github.com/xtang/the-mac-index/pull/4)
+
+**Changes**:
+1. Updated `App.tsx` to use correct type:
+   ```typescript
+   import type { HistoryResponse, CountriesResponse } from './types/api';
+   
+   const { data: countriesData } = useApi<CountriesResponse>(`/countries?type=${selectedIndex}`);
+   const countries = countriesData?.countries || [];
+   ```
+
+2. Removed unused `Country` import to fix TypeScript error
+
+### Testing
+- ✅ Built Docker images locally
+- ✅ Tested with full stack (backend + frontend + Caddy)
+- ✅ Verified IndexSelector renders
+- ✅ Verified country list populates
+- ✅ Verified chart displays correctly
+
+### Deployment
+- **Commit**: `12f94a4` 
+- **PR #4**: Merged to `main` at 2026-03-30 15:47 UTC
+- **GitHub Actions**: Deploy completed successfully in 2m7s
+- **Production verified**: Site fully operational at 15:50 UTC
+
+### Lessons Learned
+1. **Testing Gap**: Should have tested frontend locally before deploying PR #2
+2. **Subagent Timeout**: The frontend-update subagent timed out during implementation, leaving inconsistent code
+3. **Type Safety**: TypeScript didn't catch this because:
+   - `useApi<T>` is generic and trusts the type parameter
+   - React's silent failure mode doesn't throw errors
+   - No runtime validation of API response structure
+
+### Prevention
+1. Add integration tests that verify API contracts match frontend expectations
+2. Consider using runtime validation library (e.g., zod) for API responses
+3. Add smoke tests in CI/CD before production deployment
+4. Review all subagent changes carefully, especially after timeouts
+
+### Impact
+- **Downtime**: ~20 minutes total
+- **Users affected**: All visitors during outage period
+- **Data loss**: None (backend was operational)
+- **Recovery**: Immediate after deployment
+
+### Post-Deployment Verification
+```bash
+# Verified APIs working:
+curl https://index.beary.chat/api/v1/indices
+# Returns 3 indices: bigmac, oil_brent, oil_wti
+
+curl https://index.beary.chat/api/v1/countries?type=bigmac  
+# Returns {index_type, countries: [...56 countries], count: 56}
+
+# Frontend rendering:
+- IndexSelector: ✅ Shows "Big Mac Index"
+- Country List: ✅ Shows 56 countries
+- Chart: ✅ Displays China data correctly
+- Stats: ✅ Shows pricing and valuation
+```
+
+### Status: RESOLVED ✅
+Production site fully operational. Multi-index support Phase 1 complete.
