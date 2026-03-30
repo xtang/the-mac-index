@@ -4,6 +4,24 @@ export interface Country {
     currency: string;
 }
 
+export interface IndexInfo {
+    type: string;
+    name: string;
+    description: string;
+    unit: string;
+    data_source: string;
+    countries: number;
+    records: number;
+    date_range_start: string;
+    date_range_end: string;
+    update_frequency: string;
+}
+
+export interface IndicesResponse {
+    indices: IndexInfo[];
+    count: number;
+}
+
 export interface HistoryRecord {
     date: string;
     local_price: number;
@@ -14,9 +32,16 @@ export interface HistoryRecord {
 }
 
 export interface HistoryResponse {
+    index_type: string;
     country: string;
     base: string;
     records: HistoryRecord[];
+    count: number;
+}
+
+export interface CountriesResponse {
+    index_type: string;
+    countries: Country[];
     count: number;
 }
 

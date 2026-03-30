@@ -9,6 +9,7 @@ interface PriceChartProps {
     records: HistoryRecord[];
     mode: ChartMode;
     baseCurrency: BaseCurrency;
+    indexType?: string;
 }
 
 // Color scheme
@@ -28,7 +29,7 @@ const AREA_COLORS = {
     index: 'rgba(0, 191, 255, 0.3)',
 };
 
-export function PriceChart({ countryName, countryCode, records, mode, baseCurrency }: PriceChartProps) {
+export function PriceChart({ countryName, countryCode, records, mode, baseCurrency, indexType = 'bigmac' }: PriceChartProps) {
     const chartRef = useRef<ReactECharts>(null);
     const [cursorIndex, setCursorIndex] = useState<number | null>(null);
 
@@ -85,6 +86,22 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
         setCursorIndex(null);
     }, [countryCode, baseCurrency]);
 
+    // Get dynamic labels based on index type
+    const getLabels = () => {
+        if (indexType.startsWith('oil_')) {
+            return {
+                priceLabel: 'Crude Oil Price (USD/barrel)',
+                title: `OIL ${indexType === 'oil_brent' ? 'BRENT' : 'WTI'}`,
+            };
+        }
+        return {
+            priceLabel: 'Big Mac Price',
+            title: 'BIG MAC',
+        };
+    };
+
+    const labels = getLabels();
+
     // Build chart config based on mode
     const getConfig = () => {
         switch (mode) {
@@ -125,7 +142,7 @@ export function PriceChart({ countryName, countryCode, records, mode, baseCurren
             left: isSmallScreen ? 45 : 80,
         },
         title: {
-            text: `BIG MAC: ${countryName.toUpperCase()} (${countryCode}) vs ${baseCurrency}`,
+            text: `${labels.title}: ${countryName.toUpperCase()} (${countryCode}) vs ${baseCurrency}`,
             textStyle: {
                 color: '#FFB000',
                 fontFamily: 'VT323, monospace',
