@@ -16,14 +16,24 @@ type HistoryRecord struct {
 }
 
 // GetPriceHistory returns price history for a country vs a base currency
-func GetPriceHistory(db *sql.DB, countryCode, baseCurrency string) ([]HistoryRecord, error) {
-	// Map base currency to column names
+// Now supports multiple index types
+func GetPriceHistory(db *sql.DB, indexType, countryCode, baseCurrency string) ([]HistoryRecord, error) {
+	if indexType == "" {
+		indexType = "bigmac" // default for backward compatibility
+	}
+
+	// For global commodities (oil), country is always GLOBAL
+	if indexType == "oil_brent" || indexType == "oil_wti" {
+		countryCode = "GLOBAL"
+	}
+
+	// Map base currency to column names (for indices that have them)
 	indexColumnMap := map[string]string{
-		"USD": "USD_raw",
-		"EUR": "EUR_raw",
-		"GBP": "GBP_raw",
-		"JPY": "JPY_raw",
-		"CNY": "CNY_raw",
+		"USD": "usd_index",
+		"EUR": "eur_index",
+		"GBP": "gbp_index",
+		"JPY": "jpy_index",
+		"CNY": "cny_index",
 	}
 
 	// Map base currency to country code for price lookup
@@ -37,7 +47,7 @@ func GetPriceHistory(db *sql.DB, countryCode, baseCurrency string) ([]HistoryRec
 
 	indexColumn, ok := indexColumnMap[baseCurrency]
 	if !ok {
-		indexColumn = "USD_raw"
+		indexColumn = "usd_index"
 	}
 
 	baseCountry, ok := baseCountryMap[baseCurrency]
@@ -45,23 +55,56 @@ func GetPriceHistory(db *sql.DB, countryCode, baseCurrency string) ([]HistoryRec
 		baseCountry = "USA"
 	}
 
-	// Query with a subquery to get base country's exchange rate for the same date
-	// base_price = country_dollar_price * base_country_exchange_rate
+	// For global commodities, use simplified query
+	if countryCode == "GLOBAL" {
+		query := `
+			SELECT 
+				strftime(date, '%Y-%m-%d') AS date,
+				CAST(price AS DOUBLE) AS local_price,
+				CAST(dollar_price AS DOUBLE) AS dollar_price,
+				CAST(dollar_price AS DOUBLE) AS base_price,
+				CAST(1.0 AS DOUBLE) AS exchange_rate,
+				CAST(0.0 AS DOUBLE) AS raw_index
+			FROM commodity_prices
+			WHERE index_type = ? AND country_code = 'GLOBAL'
+			ORDER BY date;
+		`
+		rows, err := db.Query(query, indexType)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		var records []HistoryRecord
+		for rows.Next() {
+			var r HistoryRecord
+			if err := rows.Scan(&r.Date, &r.LocalPrice, &r.DollarPrice, &r.BasePrice, &r.DollarEx, &r.RawIndex); err != nil {
+				return nil, err
+			}
+			records = append(records, r)
+		}
+		return records, rows.Err()
+	}
+
+	// For country-specific commodities, use the full query with base currency conversion
 	query := fmt.Sprintf(`
 		SELECT 
 			strftime(c.date, '%%Y-%%m-%%d') AS date,
-			c.local_price,
+			COALESCE(c.local_price, c.price) AS local_price,
 			c.dollar_price,
-			COALESCE(c.dollar_price * b.dollar_ex, c.dollar_price) AS base_price,
-			c.dollar_ex,
+			COALESCE(c.dollar_price * b.exchange_rate, c.dollar_price) AS base_price,
+			COALESCE(c.exchange_rate, 1.0) AS exchange_rate,
 			COALESCE(c.%s, 0) AS raw_index
-		FROM big_mac_raw c
-		LEFT JOIN big_mac_raw b ON strftime(c.date, '%%Y-%%m') = strftime(b.date, '%%Y-%%m') AND b.iso_a3 = ?
-		WHERE c.iso_a3 = ?
+		FROM commodity_prices c
+		LEFT JOIN commodity_prices b 
+			ON strftime(c.date, '%%Y-%%m') = strftime(b.date, '%%Y-%%m') 
+			AND b.index_type = c.index_type
+			AND b.country_code = ?
+		WHERE c.index_type = ? AND c.country_code = ?
 		ORDER BY c.date;
 	`, indexColumn)
 
-	rows, err := db.Query(query, baseCountry, countryCode)
+	rows, err := db.Query(query, baseCountry, indexType, countryCode)
 	if err != nil {
 		return nil, err
 	}

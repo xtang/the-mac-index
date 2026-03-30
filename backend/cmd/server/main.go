@@ -43,9 +43,10 @@ func main() {
 
 	// API v1 routes
 	v1 := app.Group("/api/v1")
-	v1.Get("/countries", handlers.CountriesHandler(database))
-	v1.Get("/index/history", handlers.HistoryHandler(database))
-	v1.Post("/calculator/ppp", handlers.CalculatorHandler(database))
+	v1.Get("/indices", handlers.IndicesHandler(database))          // NEW: List available indices
+	v1.Get("/countries", handlers.CountriesHandler(database))        // Updated: now supports ?type=
+	v1.Get("/index/history", handlers.HistoryHandler(database))      // Updated: now supports ?type=
+	v1.Post("/calculator/ppp", handlers.CalculatorHandler(database)) // TODO: Update for multi-index
 
 	// Start server
 	log.Printf("🚀 Purchasing Power Terminal starting on 0.0.0.0%s (Accessible on Network)", port)

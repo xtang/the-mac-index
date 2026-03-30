@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { CountryList } from './components/CountryList';
 import { PriceChart } from './components/PriceChart';
 import { MobileCountrySelector } from './components/MobileCountrySelector';
+import IndexSelector from './components/IndexSelector';
 import { useApi } from './hooks/useApi';
 import type { Country, HistoryResponse } from './types/api';
 
@@ -23,7 +24,8 @@ const getModeLabels = (base: BaseCurrency): Record<ChartMode, string> => ({
 
 
 function App() {
-  const { data: countries, loading: countriesLoading } = useApi<Country[]>('/countries');
+  const [selectedIndex, setSelectedIndex] = useState<string>('bigmac');
+  const { data: countries, loading: countriesLoading } = useApi<Country[]>(`/countries?type=${selectedIndex}`);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -117,6 +119,13 @@ COMPARE >> VALUATION >> BUYING POWER
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  // Handler for index change - clear selected country and refetch
+  const handleIndexChange = (newIndex: string) => {
+    setSelectedIndex(newIndex);
+    setSelectedCountry(null);
+    setHistoryData(null);
+  };
+
   // Select first country by default
   useEffect(() => {
     if (countries && countries.length > 0 && !selectedCountry) {
@@ -132,7 +141,7 @@ COMPARE >> VALUATION >> BUYING POWER
     const fetchHistory = async () => {
       setHistoryLoading(true);
       try {
-        const response = await fetch(`${API_BASE}/index/history?country=${selectedCountry}&base=${baseCurrency}`);
+        const response = await fetch(`${API_BASE}/index/history?country=${selectedCountry}&base=${baseCurrency}&type=${selectedIndex}`);
         const data = await response.json();
         setHistoryData(data);
       } catch (err) {
@@ -143,7 +152,7 @@ COMPARE >> VALUATION >> BUYING POWER
     };
 
     fetchHistory();
-  }, [selectedCountry, baseCurrency]);
+  }, [selectedCountry, baseCurrency, selectedIndex]);
 
   const selectedCountryName = countries?.find(c => c.code === selectedCountry)?.name || '';
 
@@ -170,6 +179,7 @@ COMPARE >> VALUATION >> BUYING POWER
           records={historyData.records}
           mode={chartMode}
           baseCurrency={baseCurrency}
+          indexType={selectedIndex}
         />
       ) : (
         <div className="flex-1 flex items-center justify-center text-[--color-terminal-dim]">
@@ -182,6 +192,15 @@ COMPARE >> VALUATION >> BUYING POWER
   // Stats Component (Reusable)
   const renderStats = (isCompact = false) => (
     <div className="p-4 flex flex-col h-full overflow-y-auto">
+      {/* Index Selector Block */}
+      <div className="border border-[--color-terminal-green] p-3 mb-4">
+        <div className="text-[--color-terminal-green] text-sm mb-2">► COMMODITY INDEX</div>
+        <IndexSelector
+          selectedIndex={selectedIndex}
+          onIndexChange={handleIndexChange}
+        />
+      </div>
+
       {/* Settings Block */}
       <div className="border border-[--color-terminal-amber] p-3 mb-4">
         <div className="text-[--color-terminal-amber] text-sm mb-2">► BASE CURRENCY [b]</div>
