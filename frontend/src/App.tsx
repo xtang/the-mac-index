@@ -5,7 +5,7 @@ import { PriceChart } from './components/PriceChart';
 import { MobileCountrySelector } from './components/MobileCountrySelector';
 import IndexSelector from './components/IndexSelector';
 import { useApi } from './hooks/useApi';
-import type { Country, HistoryResponse } from './types/api';
+import type { HistoryResponse, CountriesResponse } from './types/api';
 
 const API_BASE = '/api/v1';
 
@@ -25,7 +25,8 @@ const getModeLabels = (base: BaseCurrency): Record<ChartMode, string> => ({
 
 function App() {
   const [selectedIndex, setSelectedIndex] = useState<string>('bigmac');
-  const { data: countries, loading: countriesLoading } = useApi<Country[]>(`/countries?type=${selectedIndex}`);
+  const { data: countriesData, loading: countriesLoading } = useApi<CountriesResponse>(`/countries?type=${selectedIndex}`);
+  const countries = countriesData?.countries || [];
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
